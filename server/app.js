@@ -1,24 +1,26 @@
 const express = require("express");
-const cors = require("cors");
 const dotenv = require("dotenv");
-
-dotenv.config();
-
-const app = express();
+const cors = require("cors");
+const connectDB = require("./config/db");
 
 const authRoutes = require("./routes/authRoutes");
-const testRoutes = require("./routes/testRoutes");
 const donationRoutes = require("./routes/donationRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+
+dotenv.config();
+connectDB();
+
+const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-app.use("/api/auth", authRoutes);
-app.use("/api/test", testRoutes);
-app.use("/api/donations", donationRoutes);
-
 app.get("/", (req, res) => {
-  res.send("Food Waste Platform API Running");
+  res.send("API is running...");
 });
+
+app.use("/api/auth", authRoutes);
+app.use("/api/donations", donationRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 module.exports = app;
