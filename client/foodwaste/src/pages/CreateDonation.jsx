@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState } from 'react';
 import { Upload, MapPin, Clock, Users, AlertCircle, CheckCircle2, Loader, ArrowRight, Filter, Search, Sparkles } from 'lucide-react';
 import axios from 'axios';
@@ -119,7 +120,7 @@ export default function CreateDonationPremium() {
 
   const handleAIFill = async () => {
     if (!formData.description || !formData.foodCategory) {
-      alert("Please select a Food Category and write a Description first.");
+      toast.error("Please select a Food Category and write a Description first.");
       return;
     }
     setAiLoading(true);
@@ -135,10 +136,10 @@ export default function CreateDonationPremium() {
         ...prev,
         description: prev.description + `\n\n[AI Storage Advice: ${storageInstruction}]`
       }));
-      alert(`AI predicted expiry: ${predictedExpiry}\nAdded storage instructions to your description.`);
+      toast.success("AI predicted expiry suggestion applied!");
     } catch (error) {
       console.error(error);
-      alert("Failed to get AI suggestions.");
+      toast.error("Failed to get AI suggestions.");
     } finally {
       setAiLoading(false);
     }
@@ -147,7 +148,7 @@ export default function CreateDonationPremium() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!allSafetyChecksComplete) {
-      alert('Please complete all food safety checks');
+      toast.error('Please complete all food safety checks');
       return;
     }
     setLoading(true);
@@ -178,7 +179,7 @@ export default function CreateDonationPremium() {
       setStep(4);
     } catch (error) {
       console.error(error);
-      alert('Error finding matches. Please try again.');
+      toast.error('Error finding matches. Please try again.');
     } finally {
       setLoading(false);
     }

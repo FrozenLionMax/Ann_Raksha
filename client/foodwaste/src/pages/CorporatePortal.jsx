@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building2, TrendingUp, Calendar, BarChart3, Download, Plus, Settings, Users, FileText, ArrowRight, Check, AlertCircle, Award } from 'lucide-react';
@@ -604,7 +605,7 @@ export default function CorporatePortal() {
               </div>
               <div className="flex gap-3 mt-6">
                 <button onClick={() => setShowScheduleModal(false)} className="flex-1 px-4 py-2 text-slate-600 dark:text-slate-400 font-semibold hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition">Cancel</button>
-                <button onClick={() => { alert('Pickup Scheduled successfully!'); setShowScheduleModal(false); }} className="flex-1 bg-emerald-700 text-white px-4 py-2 font-semibold hover:bg-emerald-800 rounded-lg transition">Confirm</button>
+                <button onClick={() => { toast.success('Pickup Scheduled successfully!'); setShowScheduleModal(false); }} className="flex-1 bg-emerald-700 text-white px-4 py-2 font-semibold hover:bg-emerald-800 rounded-lg transition">Confirm</button>
               </div>
             </div>
           </div>
@@ -631,7 +632,7 @@ export default function CorporatePortal() {
               </div>
               <div className="flex gap-3 mt-6">
                 <button onClick={() => setShowSettingsModal(false)} className="flex-1 px-4 py-2 text-slate-600 dark:text-slate-400 font-semibold hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition">Cancel</button>
-                <button onClick={() => { alert('Settings saved successfully!'); setShowSettingsModal(false); }} className="flex-1 bg-emerald-700 text-white px-4 py-2 font-semibold hover:bg-emerald-800 rounded-lg transition">Save Changes</button>
+                <button onClick={() => { toast.success('Settings saved successfully!'); setShowSettingsModal(false); }} className="flex-1 bg-emerald-700 text-white px-4 py-2 font-semibold hover:bg-emerald-800 rounded-lg transition">Save Changes</button>
               </div>
             </div>
           </div>

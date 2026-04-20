@@ -1,8 +1,5 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import 'leaflet/dist/leaflet.css';
 
 import LandingPage from "./pages/LandingPage";
@@ -19,138 +16,71 @@ import AdminDashboard from "./pages/AdminDashboard";
 import MapExplore from "./pages/MapExplore";
 import TrackDonation from "./pages/TrackDonation";
 import CorporatePortal from "./pages/CorporatePortal";
+import Leaderboard from "./pages/Leaderboard";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import SocketManager from "./components/SocketManager";
-import DarkModeToggle from "./components/DarkModeToggle";
+import Navbar from "./components/Navbar";
+
+function AppLayout() {
+  const location = useLocation();
+  const publicRoutes = ['/', '/login', '/register'];
+  const showNavbar = !publicRoutes.includes(location.pathname);
+
+  return (
+    <>
+      <SocketManager />
+      {showNavbar && <Navbar />}
+      <div className="App dark:bg-slate-900 transition-colors duration-500 min-h-screen">
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+
+          {/* Protected Routes */}
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/explore" element={<ProtectedRoute><MapExplore /></ProtectedRoute>} />
+          <Route path="/track/:id" element={<ProtectedRoute><TrackDonation /></ProtectedRoute>} />
+          <Route path="/create-donation" element={<ProtectedRoute><CreateDonation /></ProtectedRoute>} />
+          <Route path="/my-donations" element={<ProtectedRoute><MyDonations /></ProtectedRoute>} />
+          <Route path="/browse-donations" element={<ProtectedRoute><BrowseDonations /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/ai-recipes" element={<ProtectedRoute><AiRecipes /></ProtectedRoute>} />
+          <Route path="/corporate-portal" element={<ProtectedRoute><CorporatePortal /></ProtectedRoute>} />
+          <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+
+          {/* Admin Route */}
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+
+          {/* 404 */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
+    </>
+  );
+}
 
 function App() {
   return (
     <BrowserRouter>
-      <SocketManager />
-      <div className="fixed bottom-6 right-6 z-[9999]">
-        <DarkModeToggle />
-      </div>
-      <div className="App dark:bg-slate-900 transition-colors duration-500 min-h-screen">
-        <Routes>
-          {/* Public Routes */}
-          <Route
-            path="/"
-            element={<LandingPage />}
-          />
-
-          <Route
-            path="/login"
-            element={<Login />}
-          />
-
-          <Route
-            path="/register"
-            element={<Register />}
-          />
-
-        {/* Dashboard Route */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Map Explore Route */}
-        <Route
-          path="/explore"
-          element={
-            <ProtectedRoute>
-              <MapExplore />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Track Donation Route */}
-        <Route
-          path="/track/:id"
-          element={
-            <ProtectedRoute>
-              <TrackDonation />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/create-donation"
-          element={
-            <ProtectedRoute>
-              <CreateDonation />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/my-donations"
-          element={
-            <ProtectedRoute>
-              <MyDonations />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/browse-donations"
-          element={
-            <ProtectedRoute>
-              <BrowseDonations />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/ai-recipes"
-          element={
-            <ProtectedRoute>
-              <AiRecipes />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/corporate-portal"
-          element={
-            <ProtectedRoute>
-              <CorporatePortal />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Admin Route */}
-        <Route
-          path="/admin"
-          element={
-            <AdminRoute>
-              <AdminDashboard />
-            </AdminRoute>
-          }
-        />
-
-        {/* 404 */}
-        <Route
-          path="*"
-          element={<NotFound />}
-        />
-        </Routes>
-      </div>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#1e293b',
+            color: '#e2e8f0',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '16px',
+            backdropFilter: 'blur(12px)',
+          },
+          success: { iconTheme: { primary: '#10b981', secondary: '#fff' } },
+          error: { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
+        }}
+      />
+      <AppLayout />
     </BrowserRouter>
   );
 }

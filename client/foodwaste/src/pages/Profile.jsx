@@ -1,165 +1,222 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { User, Mail, Phone, Shield, Building2, BadgeCheck, ChevronLeft, Edit3 } from "lucide-react";
-import Logo from "../components/Logo";
+import {
+  User, Mail, Phone, Building2, MapPin, Save, Loader,
+  Trophy, Leaf, Droplets, Flame, Package, Edit3, Camera, Shield
+} from "lucide-react";
 
-function Profile() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
+const API = "http://localhost:5000/api/users";
+
+export default function Profile() {
+  const [userInfo, setUserInfo] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ name: "", phone: "", bio: "", organizationName: "" });
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const userInfo = JSON.parse(
-          localStorage.getItem("userInfo") || "{}"
-        );
+    const info = JSON.parse(localStorage.getItem("userInfo") || "{}");
+    setUserInfo(info);
+    setForm({
+      name: info.name || "",
+      phone: info.phone || "",
+      bio: info.bio || "",
+      organizationName: info.organizationName || "",
+    });
+  }, []);
 
-        if (!userInfo.token) {
-          navigate('/login');
-          return;
-        }
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await axios.put(`${API}/profile`, form, {
+        headers: { Authorization: `Bearer ${userInfo.token}` },
+      });
+      const updated = { ...userInfo, ...res.data.user, token: userInfo.token };
+      localStorage.setItem("userInfo", JSON.stringify(updated));
+      setUserInfo(updated);
+      setEditing(false);
+      toast.success("Profile updated successfully! ✨");
+    } catch (error) {
+      toast.error("Failed to update profile");
+    } finally {
+      setSaving(false);
+    }
+  };
 
-        const config = {
-          headers: {
-            Authorization: `Bearer ${userInfo.token}`,
-          },
-        };
+  if (!userInfo) return null;
 
-        const response = await axios.get(
-          "http://localhost:5000/api/auth/profile",
-          config
-        );
+  const stats = userInfo.impactStats || {};
+  const impactCards = [
+    { icon: Package, label: "Total Donations", value: stats.totalDonations || 0, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+    { icon: Flame, label: "Meals Provided", value: stats.mealsProvided || 0, color: "text-orange-400", bg: "bg-orange-500/10" },
+    { icon: Leaf, label: "CO₂ Prevented", value: `${(stats.co2Saved || 0).toFixed(1)} kg`, color: "text-green-400", bg: "bg-green-500/10" },
+    { icon: Droplets, label: "Water Saved", value: `${((stats.waterSaved || 0) / 1000).toFixed(1)}K L`, color: "text-blue-400", bg: "bg-blue-500/10" },
+    { icon: Trophy, label: "Impact Points", value: userInfo.points || 0, color: "text-amber-400", bg: "bg-amber-500/10" },
+  ];
 
-        setUser(response.data.user);
-      } catch (error) {
-        console.error(error);
-        alert("Failed to load profile");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, [navigate]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 flex flex-col items-center justify-center p-10">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-4">Profile Not Found</h1>
-        <button onClick={() => navigate('/dashboard')} className="bg-emerald-700 text-white px-6 py-2 rounded-xl">Go Home</button>
-      </div>
-    );
-  }
+  const initials = (userInfo.name || "U").charAt(0).toUpperCase();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 transition-colors duration-500">
-      
-      {/* Top Navigation */}
-      <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40 shadow-sm transition-colors">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => navigate('/dashboard')}
-              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition"
-            >
-              <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-            </button>
-            <div className="cursor-pointer" onClick={() => navigate('/dashboard')}>
-              <Logo size="sm" />
-            </div>
-          </div>
-          <button className="bg-emerald-700 text-white px-5 py-2 rounded-full font-semibold hover:bg-emerald-800 transition text-sm flex items-center gap-2">
-            <Edit3 className="w-4 h-4" /> Edit Profile
-          </button>
-        </div>
-      </nav>
-
-      <div className="max-w-4xl mx-auto px-6 py-12">
+    <div className="min-h-screen bg-slate-900 pb-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         {/* Profile Header */}
-        <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 md:p-12 border border-slate-200 dark:border-slate-700 shadow-sm mb-8 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden transition-colors">
-          <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-emerald-600 to-emerald-400"></div>
-          
-          <div className="relative z-10 w-32 h-32 rounded-full bg-white dark:bg-slate-700 p-2 shadow-xl shrink-0 mt-8 md:mt-12">
-            <div className="w-full h-full bg-emerald-100 dark:bg-emerald-900/50 rounded-full flex items-center justify-center">
-              <User className="w-16 h-16 text-emerald-600 dark:text-emerald-400" />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+          className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-xl mb-6"
+        >
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+            {/* Avatar */}
+            <div className="relative group">
+              <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-4xl font-black text-white shadow-2xl shadow-emerald-500/20">
+                {initials}
+              </div>
+              <div className="absolute inset-0 rounded-2xl bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                <Camera className="w-6 h-6 text-white" />
+              </div>
             </div>
-          </div>
-          
-          <div className="relative z-10 flex-1 text-center md:text-left mt-4 md:mt-16">
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{user.name}</h1>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
-              <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 text-sm font-bold uppercase tracking-wider rounded-lg">
-                {user.role}
-              </span>
-              {user.verificationStatus === 'approved' ? (
-                <span className="flex items-center gap-1 text-sm font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-lg">
-                  <BadgeCheck className="w-4 h-4" /> Verified
+
+            {/* Info */}
+            <div className="flex-1 text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start gap-3 mb-1">
+                <h1 className="text-2xl font-black text-white">{userInfo.name}</h1>
+                <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg">
+                  {userInfo.role}
                 </span>
-              ) : (
-                <span className="text-sm font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-3 py-1 rounded-lg">
-                  Pending Verification
-                </span>
-              )}
+              </div>
+              <p className="text-slate-400 text-sm">{userInfo.email}</p>
+              {userInfo.bio && <p className="text-slate-300 text-sm mt-2 max-w-md">{userInfo.bio}</p>}
+              <div className="flex items-center justify-center md:justify-start gap-4 mt-3">
+                <div className="flex items-center gap-1.5 text-sm text-slate-400">
+                  <Trophy className="w-4 h-4 text-amber-400" />
+                  <span className="font-semibold text-amber-400">{userInfo.points || 0}</span> points
+                </div>
+                <div className="flex items-center gap-1.5 text-sm text-slate-400">
+                  <Shield className="w-4 h-4 text-emerald-400" />
+                  Member since {new Date(userInfo.createdAt || Date.now()).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Profile Details Grid */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex items-start gap-4 transition-colors">
-            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center shrink-0">
-              <Mail className="w-6 h-6 text-slate-600 dark:text-slate-400" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">Email Address</p>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white break-all">{user.email}</h2>
-            </div>
+            {/* Edit Button */}
+            <button
+              onClick={() => setEditing(!editing)}
+              className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${
+                editing
+                  ? "bg-red-500/10 text-red-400 hover:bg-red-500/20"
+                  : "bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white"
+              }`}
+            >
+              {editing ? <><span>✕</span> Cancel</> : <><Edit3 className="w-4 h-4" /> Edit Profile</>}
+            </button>
           </div>
+        </motion.div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex items-start gap-4 transition-colors">
-            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center shrink-0">
-              <Phone className="w-6 h-6 text-slate-600 dark:text-slate-400" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">Phone Number</p>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">{user.phone || "Not provided"}</h2>
-            </div>
+        {/* Impact Stats */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <h2 className="text-lg font-bold text-white mb-3">Your Impact</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+            {impactCards.map((card, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 + i * 0.05 }}
+                className={`${card.bg} border border-white/5 rounded-2xl p-4 text-center`}
+              >
+                <card.icon className={`w-5 h-5 ${card.color} mx-auto mb-2`} />
+                <p className="text-white font-bold text-lg">{card.value}</p>
+                <p className="text-slate-500 text-xs mt-0.5">{card.label}</p>
+              </motion.div>
+            ))}
           </div>
+        </motion.div>
 
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex items-start gap-4 transition-colors">
-            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center shrink-0">
-              <Building2 className="w-6 h-6 text-slate-600 dark:text-slate-400" />
+        {/* Edit Form */}
+        <AnimatedSection show={editing}>
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+            className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-xl mb-6"
+          >
+            <h2 className="text-lg font-bold text-white mb-5">Edit Profile</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <InputField icon={User} label="Full Name" value={form.name} onChange={v => setForm({ ...form, name: v })} />
+              <InputField icon={Phone} label="Phone Number" value={form.phone} onChange={v => setForm({ ...form, phone: v })} />
+              <InputField icon={Building2} label="Organization" value={form.organizationName} onChange={v => setForm({ ...form, organizationName: v })} />
+              <div className="md:col-span-2">
+                <label className="text-sm text-slate-400 mb-1.5 block">Bio</label>
+                <textarea
+                  value={form.bio}
+                  onChange={e => setForm({ ...form, bio: e.target.value })}
+                  rows={3}
+                  placeholder="Tell us about yourself..."
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none transition-all"
+                />
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">Organization</p>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">{user.organizationName || "Independent"}</h2>
+            <div className="flex justify-end mt-5">
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="px-6 py-3 rounded-xl font-semibold text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:shadow-lg hover:shadow-emerald-500/25 disabled:opacity-50 flex items-center gap-2 transition-all"
+              >
+                {saving ? <><Loader className="w-4 h-4 animate-spin" /> Saving...</> : <><Save className="w-4 h-4" /> Save Changes</>}
+              </button>
             </div>
+          </motion.div>
+        </AnimatedSection>
+
+        {/* Account Info */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+          className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-xl"
+        >
+          <h2 className="text-lg font-bold text-white mb-5">Account Details</h2>
+          <div className="space-y-4">
+            <InfoRow icon={User} label="Name" value={userInfo.name} />
+            <InfoRow icon={Mail} label="Email" value={userInfo.email} />
+            <InfoRow icon={Phone} label="Phone" value={userInfo.phone || "Not set"} muted={!userInfo.phone} />
+            <InfoRow icon={Building2} label="Organization" value={userInfo.organizationName || "Not set"} muted={!userInfo.organizationName} />
+            <InfoRow icon={Shield} label="Role" value={userInfo.role} capitalize />
+            <InfoRow icon={MapPin} label="Address" value={userInfo.address || "Not set"} muted={!userInfo.address} />
           </div>
-
-          <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex items-start gap-4 transition-colors">
-            <div className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-xl flex items-center justify-center shrink-0">
-              <Shield className="w-6 h-6 text-slate-600 dark:text-slate-400" />
-            </div>
-            <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-1">Account Security</p>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Password Protected</h2>
-            </div>
-          </div>
-        </div>
-
+        </motion.div>
       </div>
     </div>
   );
 }
 
-export default Profile;
+function InputField({ icon: Icon, label, value, onChange }) {
+  return (
+    <div>
+      <label className="text-sm text-slate-400 mb-1.5 block">{label}</label>
+      <div className="relative">
+        <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+        <input
+          type="text"
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          className="w-full pl-11 pr-4 py-3 bg-slate-800/50 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
+        />
+      </div>
+    </div>
+  );
+}
+
+function InfoRow({ icon: Icon, label, value, muted, capitalize }) {
+  return (
+    <div className="flex items-center gap-4 py-3 border-b border-white/5 last:border-0">
+      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+        <Icon className="w-4 h-4 text-slate-400" />
+      </div>
+      <div>
+        <p className="text-xs text-slate-500 uppercase tracking-wider">{label}</p>
+        <p className={`text-sm font-medium ${muted ? "text-slate-600 italic" : "text-white"} ${capitalize ? "capitalize" : ""}`}>
+          {value}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function AnimatedSection({ show, children }) {
+  if (!show) return null;
+  return children;
+}

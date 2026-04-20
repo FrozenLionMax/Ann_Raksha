@@ -58,9 +58,24 @@ const userSchema = new mongoose.Schema(
 
     impactStats: {
       mealsProvided: { type: Number, default: 0 },
-      co2Saved: { type: Number, default: 0 }, // kg of CO2
-      waterSaved: { type: Number, default: 0 }, // liters of water
+      co2Saved: { type: Number, default: 0 },
+      waterSaved: { type: Number, default: 0 },
       totalDonations: { type: Number, default: 0 }
+    },
+
+    avatar: {
+      type: String,
+      default: "",
+    },
+
+    bio: {
+      type: String,
+      default: "",
+    },
+
+    address: {
+      type: String,
+      default: "",
     },
   },
   {

@@ -1,143 +1,220 @@
-import React, { useEffect, useState } from "react";
-import { getMyDonations } from "../services/donationService";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, Package, Clock, MapPin, AlertCircle } from "lucide-react";
-import Logo from "../components/Logo";
+import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
+import axios from "axios";
+import {
+  Package, Clock, MapPin, AlertCircle, CheckCircle, Loader,
+  ChevronRight, Trash2, Eye, Filter
+} from "lucide-react";
+
+const API = "http://localhost:5000/api/donations";
+const getToken = () => JSON.parse(localStorage.getItem("userInfo"))?.token;
 
 export default function MyDonations() {
   const [donations, setDonations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("all");
+  const [completing, setCompleting] = useState(null);
   const navigate = useNavigate();
+  const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+  const isNgo = userInfo.role === "ngo" || userInfo.role === "receiver";
 
-  useEffect(() => {
-    const fetchDonations = async () => {
-      try {
-        const data = await getMyDonations();
-        setDonations(data.donations || []);
-      } catch (error) {
-        console.error("Failed to fetch donations", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchDonations();
-  }, []);
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'available': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-400';
-      case 'matched': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-400';
-      case 'picked_up': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-400';
-      case 'completed': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-400';
-      default: return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400';
+  const fetchDonations = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${API}/my-donations`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      setDonations(res.data.donations || []);
+    } catch (error) {
+      toast.error("Failed to fetch donations");
+    } finally {
+      setLoading(false);
     }
   };
 
+  useEffect(() => { fetchDonations(); }, []);
+
+  const handleComplete = async (id) => {
+    setCompleting(id);
+    try {
+      await axios.put(`${API}/complete/${id}`, {}, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      toast.success("Donation marked as completed! 🎉");
+      fetchDonations();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to complete");
+    } finally {
+      setCompleting(null);
+    }
+  };
+
+  const tabs = [
+    { key: "all", label: "All", count: donations.length },
+    { key: "available", label: "Available", count: donations.filter(d => d.status === "available").length },
+    { key: "matched", label: "Claimed", count: donations.filter(d => d.status === "matched").length },
+    { key: "completed", label: "Completed", count: donations.filter(d => d.status === "completed").length },
+  ];
+
+  const filtered = activeTab === "all" ? donations : donations.filter(d => d.status === activeTab);
+
+  const statusStyles = {
+    available: { bg: "bg-emerald-500/10", text: "text-emerald-400", border: "border-emerald-500/20", dot: "bg-emerald-500" },
+    matched: { bg: "bg-amber-500/10", text: "text-amber-400", border: "border-amber-500/20", dot: "bg-amber-500" },
+    picked_up: { bg: "bg-blue-500/10", text: "text-blue-400", border: "border-blue-500/20", dot: "bg-blue-500" },
+    completed: { bg: "bg-slate-500/10", text: "text-slate-400", border: "border-slate-500/20", dot: "bg-slate-500" },
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 transition-colors duration-500">
-      
-      {/* Top Navigation */}
-      <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-40 shadow-sm transition-colors">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button 
-              onClick={() => navigate('/dashboard')}
-              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition"
-            >
-              <ChevronLeft className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-            </button>
-            <div className="cursor-pointer" onClick={() => navigate('/dashboard')}>
-              <Logo size="sm" />
-            </div>
-          </div>
-          <button 
-            onClick={() => navigate('/create-donation')}
-            className="bg-emerald-700 text-white px-5 py-2 rounded-full font-semibold hover:bg-emerald-800 transition text-sm"
-          >
-            + New Donation
-          </button>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-slate-900">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        {/* Header */}
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+          <h1 className="text-3xl font-black text-white">
+            My <span className="text-emerald-400">Donations</span>
+          </h1>
+          <p className="text-slate-400 mt-1">
+            {isNgo ? "Donations you've claimed" : "Track your food donations"}
+          </p>
+        </motion.div>
 
-      <div className="max-w-5xl mx-auto px-6 py-12">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">My Donations</h1>
-            <p className="text-slate-600 dark:text-slate-400">Track and manage your active and past food donations.</p>
-          </div>
-          <div className="bg-white dark:bg-slate-800 px-4 py-2 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
-            <span className="text-slate-600 dark:text-slate-400 text-sm font-semibold">Total: </span>
-            <span className="text-emerald-700 dark:text-emerald-500 font-bold ml-1">{donations.length}</span>
-          </div>
+        {/* Tabs */}
+        <div className="flex gap-1.5 mb-6 bg-white/5 p-1.5 rounded-2xl border border-white/10 w-fit">
+          {tabs.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${
+                activeTab === tab.key
+                  ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/25"
+                  : "text-slate-400 hover:text-white hover:bg-white/5"
+              }`}
+            >
+              {tab.label}
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${
+                activeTab === tab.key ? "bg-white/20" : "bg-white/5"
+              }`}>{tab.count}</span>
+            </button>
+          ))}
         </div>
 
-        {loading ? (
-          <div className="text-center py-20">
-            <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-slate-600 dark:text-slate-400">Loading your donations...</p>
-          </div>
-        ) : donations.length === 0 ? (
-          <div className="text-center py-20 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
-            <div className="w-20 h-20 bg-emerald-50 dark:bg-emerald-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Package className="w-10 h-10 text-emerald-500" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No donations yet</h3>
-            <p className="text-slate-600 dark:text-slate-400 max-w-sm mx-auto mb-8">You haven't made any food donations yet. Start making a difference today!</p>
-            <button 
-              onClick={() => navigate('/create-donation')}
-              className="bg-emerald-700 text-white px-8 py-3 rounded-xl font-semibold hover:bg-emerald-800 transition shadow-lg"
-            >
-              Create Your First Donation
-            </button>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {donations.map((donation) => (
-              <div key={donation._id} className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition group">
-                <div className="flex justify-between items-start mb-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${getStatusColor(donation.status)}`}>
-                    {donation.status.replace('_', ' ')}
-                  </span>
-                  {donation.urgencyLevel === 'urgent' && (
-                    <span className="text-red-500 flex items-center gap-1 text-xs font-bold bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-md">
-                      <AlertCircle className="w-3 h-3" /> Urgent
-                    </span>
-                  )}
-                </div>
-                
-                <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-emerald-700 dark:group-hover:text-emerald-500 transition">
-                  {donation.foodTitle}
-                </h3>
-                
-                <div className="space-y-2 mb-6">
-                  <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
-                    <Package className="w-4 h-4 mr-2" />
-                    <span>{donation.quantity} kg • Serves {donation.servesPeople}</span>
+        {/* Loading */}
+        {loading && (
+          <div className="space-y-3">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-5 animate-pulse">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white/10 rounded-xl" />
+                  <div className="flex-1">
+                    <div className="h-4 bg-white/10 rounded-lg w-1/3 mb-2" />
+                    <div className="h-3 bg-white/10 rounded-lg w-1/2" />
                   </div>
-                  <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
-                    <Clock className="w-4 h-4 mr-2" />
-                    <span>Expires: {donation.expiryTime}</span>
-                  </div>
-                  <div className="flex items-start text-sm text-slate-600 dark:text-slate-400">
-                    <MapPin className="w-4 h-4 mr-2 mt-0.5" />
-                    <span className="line-clamp-2">{donation.pickupAddress}</span>
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                  <span className="text-xs text-slate-500">
-                    {new Date(donation.createdAt).toLocaleDateString()}
-                  </span>
-                  <button 
-                    onClick={() => navigate(`/track/${donation._id}`)}
-                    className="text-emerald-700 dark:text-emerald-500 font-semibold text-sm hover:underline"
-                  >
-                    View Details →
-                  </button>
+                  <div className="h-8 w-24 bg-white/10 rounded-xl" />
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && filtered.length === 0 && (
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-20"
+          >
+            <div className="w-20 h-20 mx-auto mb-4 rounded-3xl bg-emerald-500/10 flex items-center justify-center">
+              <Package className="w-10 h-10 text-emerald-500/50" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">
+              {activeTab === "all" ? "No donations yet" : `No ${activeTab} donations`}
+            </h3>
+            <p className="text-slate-400 mb-6">
+              {isNgo ? "Browse available donations to get started" : "Create your first food donation to save meals"}
+            </p>
+            <button
+              onClick={() => navigate(isNgo ? "/browse-donations" : "/create-donation")}
+              className="px-6 py-3 rounded-xl font-semibold text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:shadow-lg hover:shadow-emerald-500/25 transition-all"
+            >
+              {isNgo ? "Browse Donations" : "Create Donation"}
+            </button>
+          </motion.div>
+        )}
+
+        {/* Donation List */}
+        {!loading && filtered.length > 0 && (
+          <div className="space-y-3">
+            <AnimatePresence mode="popLayout">
+              {filtered.map((donation, idx) => {
+                const style = statusStyles[donation.status] || statusStyles.available;
+                return (
+                  <motion.div
+                    key={donation._id}
+                    layout
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    transition={{ delay: idx * 0.03 }}
+                    className="group bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/[0.07] hover:border-emerald-500/20 transition-all cursor-pointer"
+                    onClick={() => navigate(`/track/${donation._id}`)}
+                  >
+                    <div className="flex items-center gap-4">
+                      {/* Status Icon */}
+                      <div className={`w-12 h-12 rounded-xl ${style.bg} flex items-center justify-center flex-shrink-0`}>
+                        {donation.status === "completed" ? (
+                          <CheckCircle className={`w-5 h-5 ${style.text}`} />
+                        ) : donation.status === "matched" ? (
+                          <Clock className={`w-5 h-5 ${style.text}`} />
+                        ) : (
+                          <Package className={`w-5 h-5 ${style.text}`} />
+                        )}
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <h3 className="text-white font-semibold truncate group-hover:text-emerald-400 transition-colors">
+                            {donation.foodTitle}
+                          </h3>
+                          {donation.urgencyLevel === "urgent" && (
+                            <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                          <span>{donation.quantity} kg • {donation.servesPeople} servings</span>
+                          <span>•</span>
+                          <span className="flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            <span className="truncate max-w-[200px]">{donation.pickupAddress}</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Status Badge */}
+                      <div className="flex items-center gap-3">
+                        <span className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg border ${style.bg} ${style.text} ${style.border}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${style.dot}`} />
+                          {donation.status.replace("_", " ")}
+                        </span>
+
+                        {/* Quick Action */}
+                        {donation.status === "matched" && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleComplete(donation._id); }}
+                            disabled={completing === donation._id}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-all disabled:opacity-50"
+                          >
+                            {completing === donation._id ? "..." : "✓ Complete"}
+                          </button>
+                        )}
+
+                        <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-emerald-400 transition-colors" />
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
           </div>
         )}
       </div>
