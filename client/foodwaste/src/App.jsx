@@ -3,6 +3,7 @@ import {
   Routes,
   Route,
 } from "react-router-dom";
+import 'leaflet/dist/leaflet.css';
 
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
@@ -13,36 +14,63 @@ import MyDonations from "./pages/MyDonations";
 import BrowseDonations from "./pages/BrowseDonations";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import AiRecipes from "./pages/AiRecipes";
+import AdminDashboard from "./pages/AdminDashboard";
+import MapExplore from "./pages/MapExplore";
+import TrackDonation from "./pages/TrackDonation";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
+import SocketManager from "./components/SocketManager";
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        {/* Public Routes */}
-        <Route
-          path="/"
-          element={<LandingPage />}
-        />
+      <SocketManager />
+      <div className="App dark:bg-gray-900 transition-colors duration-500 min-h-screen">
+        <Routes>
+          {/* Public Routes */}
+          <Route
+            path="/"
+            element={<LandingPage />}
+          />
 
-        <Route
-          path="/login"
-          element={<Login />}
-        />
+          <Route
+            path="/login"
+            element={<Login />}
+          />
 
-        <Route
-          path="/register"
-          element={<Register />}
-        />
+          <Route
+            path="/register"
+            element={<Register />}
+          />
 
-        {/* Protected Routes */}
+        {/* Dashboard Route */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Map Explore Route */}
+        <Route
+          path="/explore"
+          element={
+            <ProtectedRoute>
+              <MapExplore />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Track Donation Route */}
+        <Route
+          path="/track/:id"
+          element={
+            <ProtectedRoute>
+              <TrackDonation />
             </ProtectedRoute>
           }
         />
@@ -83,12 +111,21 @@ function App() {
           }
         />
 
-        {/* Future Admin Route Example */}
+        <Route
+          path="/ai-recipes"
+          element={
+            <ProtectedRoute>
+              <AiRecipes />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Admin Route */}
         <Route
           path="/admin"
           element={
             <AdminRoute>
-              <Dashboard />
+              <AdminDashboard />
             </AdminRoute>
           }
         />
@@ -98,7 +135,8 @@ function App() {
           path="*"
           element={<NotFound />}
         />
-      </Routes>
+        </Routes>
+      </div>
     </BrowserRouter>
   );
 }

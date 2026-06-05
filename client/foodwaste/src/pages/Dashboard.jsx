@@ -16,6 +16,7 @@ import {
   Eye,
   CheckCircle,
   XCircle,
+  MapPin,
 } from 'lucide-react';
 import NotificationCenter from '../components/NotificationCenter';
 import { getDashboardStats } from '../services/dashboardService';
@@ -233,10 +234,10 @@ export default function Dashboard() {
             <Plus className="w-5 h-5" /> Create Donation
           </button>
           <button
-            onClick={() => navigate('/browse-donations')}
+            onClick={() => navigate('/explore')}
             className="bg-white border-2 border-[#7BAE7F] text-[#2F5D50] px-6 py-4 rounded-2xl font-semibold hover:bg-[#7BAE7F]/5 transition flex items-center justify-center gap-2"
           >
-            <Eye className="w-5 h-5" /> Browse Donations
+            <MapPin className="w-5 h-5" /> Explore Map
           </button>
           <button className="bg-white border border-[#EDE6DB] text-[#1F2937] px-6 py-4 rounded-2xl font-semibold hover:bg-[#FAFAFA] transition flex items-center justify-center gap-2">
             <BarChart3 className="w-5 h-5" /> View Reports

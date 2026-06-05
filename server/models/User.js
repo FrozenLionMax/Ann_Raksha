@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["donor", "receiver", "ngo"],
+      enum: ["donor", "receiver", "ngo", "admin"],
       required: true,
     },
 
@@ -36,8 +36,19 @@ const userSchema = new mongoose.Schema(
     },
 
     verificationStatus: {
-      type: Boolean,
-      default: false,
+      type: String,
+      enum: ["unverified", "pending", "approved", "rejected"],
+      default: "unverified",
+    },
+
+    verificationDocument: {
+      type: String,
+      default: "",
+    },
+
+    rejectionReason: {
+      type: String,
+      default: "",
     },
   },
   {

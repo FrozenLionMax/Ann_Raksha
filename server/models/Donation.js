@@ -43,6 +43,11 @@ const donationSchema = new mongoose.Schema(
       required: true
     },
 
+    location: {
+      lat: { type: Number },
+      lng: { type: Number }
+    },
+
     urgencyLevel: {
       type: String,
       enum: ["normal", "urgent"],
@@ -51,7 +56,7 @@ const donationSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["available", "claimed", "completed"],
+      enum: ["available", "matched", "picked_up", "completed"],
       default: "available"
     },
 
@@ -59,7 +64,19 @@ const donationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       default: null
-    }
+    },
+
+    matchMode: {
+      type: String,
+      enum: ["automatic", "manual"],
+      default: "automatic"
+    },
+
+    matchedNgos: [{
+      ngoId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      score: Number,
+      reason: String
+    }]
   },
   {
     timestamps: true

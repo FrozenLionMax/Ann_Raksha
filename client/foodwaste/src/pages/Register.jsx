@@ -115,8 +115,10 @@ export default function Register() {
       }
 
       const data = await response.json();
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('userInfo', JSON.stringify(data.user));
+      localStorage.setItem(
+        "userInfo",
+        JSON.stringify(data)
+      );
 
       setSuccess(true);
 
