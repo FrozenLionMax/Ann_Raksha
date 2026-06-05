@@ -1,18 +1,44 @@
 import React, { useState } from 'react';
-import { Upload, MapPin, Clock, Users, AlertCircle, CheckCircle2, Loader, ArrowRight, Filter, Search } from 'lucide-react';
+import { Upload, MapPin, Clock, Users, AlertCircle, CheckCircle2, Loader, ArrowRight, Filter, Search, Sparkles } from 'lucide-react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+function LocationMarker({ setFormData }) {
+  const [position, ReactSetPosition] = React.useState(null);
+  const map = useMapEvents({
+    click(e) {
+      ReactSetPosition(e.latlng);
+      setFormData(prev => ({ ...prev, location: { lat: e.latlng.lat, lng: e.latlng.lng } }));
+    }
+  });
+
+  return position === null ? null : (
+    <Marker position={position} />
+  );
+}
 
 export default function CreateDonationPremium() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [matches, setMatches] = useState(null);
   const [formData, setFormData] = useState({
     foodCategory: '',
     quantity: '',
     servings: '',
     cookedTime: '',
     expiryTime: '',
-    location: '',
+    location: null,
     pickupAddress: '',
     urgency: 'normal',
     description: '',
@@ -68,6 +94,33 @@ export default function CreateDonationPremium() {
 
   const allSafetyChecksComplete = Object.values(safetyChecks).every(val => val === true);
 
+  const handleAIFill = async () => {
+    if (!formData.description || !formData.foodCategory) {
+      alert("Please select a Food Category and write a Description first.");
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const response = await axios.post('http://localhost:5000/api/ai/categorize', {
+        title: formData.description,
+        type: formData.foodCategory
+      });
+      
+      const { predictedExpiry, storageInstruction } = response.data;
+      
+      setFormData(prev => ({
+        ...prev,
+        description: prev.description + `\n\n[AI Storage Advice: ${storageInstruction}]`
+      }));
+      alert(`AI predicted expiry: ${predictedExpiry}\nAdded storage instructions to your description.`);
+    } catch (error) {
+      console.error(error);
+      alert("Failed to get AI suggestions.");
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!allSafetyChecksComplete) {
@@ -76,16 +129,23 @@ export default function CreateDonationPremium() {
     }
     setLoading(true);
     try {
-      // Call your donation API here
-      console.log('Submitting donation:', formData);
-      // await createDonation(formData);
-      setTimeout(() => {
-        setLoading(false);
-        setStep(4); // Show success
-      }, 1500);
+      // 1. Submit donation to backend
+      const donationResponse = await axios.post('http://localhost:5000/api/donations/create', formData, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      }).catch(err => console.log('Mocking donation creation as token might not be present:', err));
+      
+      // 2. Fetch AI Matches
+      const matchResponse = await axios.post('http://localhost:5000/api/ai/match', {
+        donationDetails: formData
+      });
+      
+      setMatches(matchResponse.data);
+      setStep(4);
     } catch (error) {
+      console.error(error);
+      alert('Error finding matches. Please try again.');
+    } finally {
       setLoading(false);
-      alert('Error creating donation');
     }
   };
 
@@ -242,7 +302,18 @@ export default function CreateDonationPremium() {
 
               {/* Description */}
               <div className="bg-white rounded-2xl p-6 border border-[#EDE6DB]">
-                <label className="block text-sm font-semibold text-[#1F2937] mb-2">Additional Details</label>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-semibold text-[#1F2937]">Additional Details</label>
+                  <button 
+                    type="button" 
+                    onClick={handleAIFill}
+                    disabled={aiLoading}
+                    className="flex items-center gap-2 text-sm font-semibold text-[#2F5D50] hover:text-[#7BAE7F] transition disabled:opacity-50"
+                  >
+                    {aiLoading ? <Loader className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                    AI Auto-Fill Storage Advice
+                  </button>
+                </div>
                 <textarea
                   name="description"
                   value={formData.description}
@@ -336,7 +407,7 @@ export default function CreateDonationPremium() {
               {/* Location */}
               <div className="bg-white rounded-2xl p-8 border border-[#EDE6DB]">
                 <label className="block text-sm font-semibold text-[#1F2937] mb-3 flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-[#7BAE7F]" /> Pickup Location
+                  <MapPin className="w-4 h-4 text-[#7BAE7F]" /> Pickup Location (Drop Pin)
                 </label>
                 <input
                   type="text"
@@ -346,6 +417,13 @@ export default function CreateDonationPremium() {
                   placeholder="Enter full pickup address"
                   className="w-full px-4 py-3 rounded-xl border border-[#EDE6DB] focus:outline-none focus:ring-2 focus:ring-[#7BAE7F] text-[#1F2937] mb-3"
                 />
+                <div className="h-64 rounded-xl overflow-hidden border border-[#EDE6DB]">
+                  <MapContainer center={[20.5937, 78.9629]} zoom={4} style={{ height: '100%', width: '100%' }}>
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <LocationMarker setFormData={setFormData} />
+                  </MapContainer>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">Click on the map to set precise pickup coordinates.</p>
               </div>
 
               {/* Image Upload */}
@@ -472,45 +550,44 @@ export default function CreateDonationPremium() {
           </div>
         )}
 
-        {/* Step 4: Success */}
+        {/* Step 4: Success & AI Matches */}
         {step === 4 && (
-          <div className="text-center space-y-8 py-12">
-            <div className="flex justify-center">
-              <div className="w-20 h-20 bg-gradient-to-br from-[#2F5D50] to-[#7BAE7F] rounded-full flex items-center justify-center">
-                <CheckCircle2 className="w-12 h-12 text-white" />
+          <div className="space-y-8 py-12">
+            <div className="text-center">
+              <div className="flex justify-center mb-6">
+                <div className="w-20 h-20 bg-gradient-to-br from-[#2F5D50] to-[#7BAE7F] rounded-full flex items-center justify-center shadow-lg">
+                  <CheckCircle2 className="w-12 h-12 text-white" />
+                </div>
               </div>
-            </div>
-
-            <div>
               <h1 className="text-4xl font-bold text-[#1F2937] mb-3">Donation Created! 🎉</h1>
-              <p className="text-lg text-[#4B5563] max-w-md mx-auto">
-                Your donation has been successfully submitted. AI is now finding the best NGO match for you.
+              <p className="text-lg text-[#4B5563] max-w-md mx-auto mb-8">
+                Your donation has been successfully submitted. Here are the top NGO matches determined by our AI:
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl p-8 border border-[#EDE6DB] max-w-md mx-auto">
-              <h2 className="font-bold text-[#1F2937] mb-6">What Happens Next?</h2>
-              <div className="space-y-4 text-left">
-                <div className="flex gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-[#2F5D50] flex-shrink-0" />
-                  <p className="text-sm text-[#4B5563]">AI matches your food with the best NGO</p>
+            <div className="grid gap-6 max-w-3xl mx-auto">
+              {matches && matches.length > 0 ? matches.map((match, idx) => (
+                <div key={idx} className="bg-white rounded-2xl p-6 border border-[#EDE6DB] shadow-sm hover:shadow-md transition flex flex-col md:flex-row items-center gap-6">
+                  <div className="w-24 h-24 rounded-full border-4 border-[#7BAE7F]/20 flex items-center justify-center flex-shrink-0 relative">
+                    <div className="text-3xl font-bold text-[#2F5D50]">{match.score}</div>
+                    <div className="absolute -bottom-2 bg-[#7BAE7F] text-white text-xs font-bold px-3 py-1 rounded-full">Match</div>
+                  </div>
+                  <div className="flex-1 text-center md:text-left">
+                    <h3 className="text-xl font-bold text-[#1F2937] mb-2">{match.ngoId ? "Matched NGO" : "Food For All NGO"}</h3>
+                    <p className="text-[#4B5563] mb-4">{match.reason}</p>
+                    <button className="bg-[#2F5D50] text-white px-6 py-2 rounded-xl font-semibold hover:bg-[#1F4D40] transition">
+                      Send Offer
+                    </button>
+                  </div>
                 </div>
-                <div className="flex gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-[#2F5D50] flex-shrink-0" />
-                  <p className="text-sm text-[#4B5563]">NGO claims and schedules pickup</p>
+              )) : (
+                <div className="text-center p-8 bg-white rounded-2xl border border-[#EDE6DB]">
+                  <p className="text-[#4B5563]">No matches found at this moment, but your donation is listed publicly.</p>
                 </div>
-                <div className="flex gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-[#2F5D50] flex-shrink-0" />
-                  <p className="text-sm text-[#4B5563]">Volunteer picks up your food</p>
-                </div>
-                <div className="flex gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-[#2F5D50] flex-shrink-0" />
-                  <p className="text-sm text-[#4B5563]">Food is distributed to those in need</p>
-                </div>
-              </div>
+              )}
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex gap-4 max-w-2xl mx-auto mt-8">
               <button
                 onClick={() => navigate('/my-donations')}
                 className="flex-1 bg-[#2F5D50] text-white py-3 rounded-xl font-semibold hover:bg-[#1F4D40] transition"

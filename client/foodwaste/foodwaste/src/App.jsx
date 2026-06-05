@@ -2,6 +2,7 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
+import LandingPage from './pages/LandingPage';
 import './App.css'
 
 function App() {
@@ -115,7 +116,23 @@ function App() {
       <div className="ticks"></div>
       <section id="spacer"></section>
     </>
+    
+
   )
+  <Router>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/home" element={<LandingPage />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/create-donation" element={<CreateDonation />} />
+        <Route path="/browse-donations" element={<BrowseDonations />} />
+        <Route path="/my-donations" element={<MyDonations />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Router>
 }
 
 export default App

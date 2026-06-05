@@ -3,6 +3,7 @@ const Donation = require("../models/Donation");
 const {
   createNotification,
 } = require("../services/notificationService");
+const socketio = require("../socket");
 
 const createDonation = async (req, res) => {
   try {
@@ -14,6 +15,7 @@ const createDonation = async (req, res) => {
       cookedTime,
       expiryTime,
       pickupAddress,
+      location,
       urgencyLevel,
     } = req.body;
 
@@ -26,6 +28,7 @@ const createDonation = async (req, res) => {
       cookedTime,
       expiryTime,
       pickupAddress,
+      location,
       urgencyLevel,
       status: "available",
     });
@@ -103,7 +106,7 @@ const claimDonation = async (req, res) => {
       });
     }
 
-    donation.status = "claimed";
+    donation.status = "matched";
     donation.claimedBy = req.user._id;
 
     await donation.save();
@@ -114,6 +117,10 @@ const claimDonation = async (req, res) => {
       "Someone has claimed your donation.",
       "claim"
     );
+
+    // Emit real-time socket event to all clients (in a real app, emit to specific donorId room)
+    const io = socketio.getIO();
+    io.emit('status_update', { donationId: donation._id, status: 'matched', title: donation.foodTitle });
 
     res.json({
       message: "Donation claimed successfully",
@@ -149,6 +156,9 @@ const completeDonation = async (req, res) => {
       "complete"
     );
 
+    const io = socketio.getIO();
+    io.emit('status_update', { donationId: donation._id, status: 'completed', title: donation.foodTitle });
+
     res.json({
       message: "Donation completed successfully",
       donation,
@@ -160,10 +170,36 @@ const completeDonation = async (req, res) => {
   }
 };
 
+const updateDonationStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const donation = await Donation.findById(req.params.id);
+    if (!donation) return res.status(404).json({ message: "Not found" });
+    
+    donation.status = status;
+    await donation.save();
+
+    await createNotification(
+      donation.donorId,
+      "Status Update",
+      `Your donation is now ${status}.`,
+      "status_update"
+    );
+
+    const io = socketio.getIO();
+    io.emit('status_update', { donationId: donation._id, status, title: donation.foodTitle });
+
+    res.json(donation);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update status" });
+  }
+};
+
 module.exports = {
   createDonation,
   getMyDonations,
   browseDonations,
   claimDonation,
   completeDonation,
+  updateDonationStatus,
 };

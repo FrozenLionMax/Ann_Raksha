@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, ArrowRight, CheckCircle, Zap, Users, TrendingUp, MapPin, Clock, Shield, Leaf, Award, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import BackgroundShader from '../components/BackgroundShader';
+import DarkModeToggle from '../components/DarkModeToggle';
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -72,33 +74,35 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#F8F6F2] via-white to-[#FAFAFA]" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+    <div className="min-h-screen bg-transparent relative dark:bg-gray-900 transition-colors duration-500" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+      <BackgroundShader />
       
       {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-white/90 backdrop-blur-md z-50 border-b border-[#EDE6DB] shadow-sm">
+      <nav className="fixed top-0 w-full bg-white/90 dark:bg-gray-900/90 backdrop-blur-md z-50 border-b border-[#EDE6DB] dark:border-gray-800 shadow-sm transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-[#2F5D50] to-[#7BAE7F] rounded-lg flex items-center justify-center text-white font-bold text-sm">F</div>
-            <span className="text-xl font-bold text-[#2F5D50]">FoodFlow</span>
+            <span className="text-xl font-bold text-[#2F5D50] dark:text-[#7BAE7F]">FoodFlow</span>
           </div>
           
-          <div className="hidden md:flex gap-10 text-sm text-[#1F2937]">
-            <a href="#how" className="hover:text-[#2F5D50] transition font-medium">How It Works</a>
-            <a href="#impact" className="hover:text-[#2F5D50] transition font-medium">Impact</a>
-            <a href="#partners" className="hover:text-[#2F5D50] transition font-medium">Partners</a>
-            <a href="#faq" className="hover:text-[#2F5D50] transition font-medium">FAQ</a>
+          <div className="hidden md:flex gap-10 text-sm text-[#1F2937] dark:text-gray-300">
+            <a href="#how" className="hover:text-[#2F5D50] dark:hover:text-[#7BAE7F] transition font-medium">How It Works</a>
+            <a href="#impact" className="hover:text-[#2F5D50] dark:hover:text-[#7BAE7F] transition font-medium">Impact</a>
+            <a href="#partners" className="hover:text-[#2F5D50] dark:hover:text-[#7BAE7F] transition font-medium">Partners</a>
+            <a href="#faq" className="hover:text-[#2F5D50] dark:hover:text-[#7BAE7F] transition font-medium">FAQ</a>
           </div>
           
-          <div className="flex gap-3">
+          <div className="flex items-center gap-4">
+            <DarkModeToggle />
             <button 
               onClick={() => navigate('/login')}
-              className="border border-[#2F5D50] text-[#2F5D50] px-5 py-2 rounded-full text-sm font-semibold hover:bg-[#2F5D50]/5 transition"
+              className="border border-[#2F5D50] dark:border-[#7BAE7F] text-[#2F5D50] dark:text-[#7BAE7F] px-5 py-2 rounded-full text-sm font-semibold hover:bg-[#2F5D50]/5 dark:hover:bg-[#7BAE7F]/10 transition"
             >
               Sign In
             </button>
             <button 
               onClick={() => navigate('/register')}
-              className="bg-[#2F5D50] text-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-[#1F4D40] transition shadow-lg"
+              className="bg-[#2F5D50] dark:bg-[#7BAE7F] text-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-[#1F4D40] dark:hover:bg-[#6A9D6E] transition shadow-lg"
             >
               Get Started
             </button>
@@ -118,13 +122,13 @@ export default function LandingPage() {
             </span>
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-bold text-[#1F2937] mb-6 leading-tight tracking-tight" style={{ animation: 'fadeInUp 0.8s ease-out 0.1s both' }}>
+          <h1 className="text-5xl md:text-7xl font-bold text-[#1F2937] dark:text-white mb-6 leading-tight tracking-tight" style={{ animation: 'fadeInUp 0.8s ease-out 0.1s both' }}>
             Reducing Food Waste.<br/>
-            <span className="bg-gradient-to-r from-[#7BAE7F] to-[#2F5D50] bg-clip-text text-transparent">Feeding Communities.</span><br/>
+            <span className="bg-gradient-to-r from-[#7BAE7F] to-[#2F5D50] dark:from-[#A8D3B0] dark:to-[#7BAE7F] bg-clip-text text-transparent">Feeding Communities.</span><br/>
             Empowering NGOs.
           </h1>
           
-          <p className="text-lg md:text-xl text-[#4B5563] mb-12 max-w-2xl mx-auto leading-relaxed font-light" style={{ animation: 'fadeInUp 0.8s ease-out 0.2s both' }}>
+          <p className="text-lg md:text-xl text-[#4B5563] dark:text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed font-light" style={{ animation: 'fadeInUp 0.8s ease-out 0.2s both' }}>
             Connect restaurants, hotels, and corporate donors with NGOs that need food most. AI-powered matching, real-time verification, and measurable impact tracking.
           </p>
 
@@ -153,7 +157,7 @@ export default function LandingPage() {
       </section>
 
       {/* How It Works */}
-      <section id="how" className="py-24 px-6 bg-white relative">
+      <section id="how" className="py-24 px-6 bg-white/40 backdrop-blur-sm relative">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-[#1F2937] mb-4">How It Works</h2>
