@@ -6,4 +6,16 @@
 
 * {
   font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: background-color 0.4s ease-in-out, border-color 0.4s ease-in-out, color 0.4s ease-in-out, box-shadow 0.4s ease-in-out;
+}
+
+/* Exempt Leaflet map elements from global transitions to avoid map dragging lag */
+.leaflet-container * {
+  transition: none !important;
+}
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100;
+  }
 }

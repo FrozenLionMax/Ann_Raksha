@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/dashboard";
+const API_URL = "http://localhost:5000/api/users/dashboard";
 
 export const getDashboardStats = async () => {
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));

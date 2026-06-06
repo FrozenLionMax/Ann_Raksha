@@ -18,16 +18,21 @@ import AiRecipes from "./pages/AiRecipes";
 import AdminDashboard from "./pages/AdminDashboard";
 import MapExplore from "./pages/MapExplore";
 import TrackDonation from "./pages/TrackDonation";
+import CorporatePortal from "./pages/CorporatePortal";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 import SocketManager from "./components/SocketManager";
+import DarkModeToggle from "./components/DarkModeToggle";
 
 function App() {
   return (
     <BrowserRouter>
       <SocketManager />
-      <div className="App dark:bg-gray-900 transition-colors duration-500 min-h-screen">
+      <div className="fixed bottom-6 right-6 z-[9999]">
+        <DarkModeToggle />
+      </div>
+      <div className="App dark:bg-slate-900 transition-colors duration-500 min-h-screen">
         <Routes>
           {/* Public Routes */}
           <Route
@@ -116,6 +121,15 @@ function App() {
           element={
             <ProtectedRoute>
               <AiRecipes />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/corporate-portal"
+          element={
+            <ProtectedRoute>
+              <CorporatePortal />
             </ProtectedRoute>
           }
         />

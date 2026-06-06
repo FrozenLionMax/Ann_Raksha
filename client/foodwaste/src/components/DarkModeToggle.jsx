@@ -3,57 +3,64 @@ import { motion } from 'framer-motion';
 import { Sun, Moon } from 'lucide-react';
 
 export default function DarkModeToggle() {
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.theme === 'dark' ||
+        (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+    return false;
+  });
 
   useEffect(() => {
-    // Check initial preference
-    if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      setIsDark(true);
-      document.documentElement.classList.add('dark');
-    } else {
-      setIsDark(false);
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
-
-  const toggleTheme = () => {
     if (isDark) {
-      document.documentElement.classList.remove('dark');
-      localStorage.theme = 'light';
-      setIsDark(false);
-    } else {
       document.documentElement.classList.add('dark');
       localStorage.theme = 'dark';
-      setIsDark(true);
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.theme = 'light';
     }
-  };
+  }, [isDark]);
 
   return (
     <button
-      onClick={toggleTheme}
-      className={`relative w-16 h-8 rounded-full p-1 transition-colors duration-500 ease-in-out focus:outline-none shadow-inner border ${
-        isDark ? 'bg-gray-800 border-gray-700' : 'bg-blue-100 border-blue-200'
-      }`}
+      onClick={(e) => {
+        e.stopPropagation();
+        setIsDark((d) => !d);
+      }}
       aria-label="Toggle Dark Mode"
+      style={{
+        position: 'relative',
+        width: 56,
+        height: 30,
+        borderRadius: 999,
+        padding: 3,
+        border: 'none',
+        cursor: 'pointer',
+        background: isDark ? '#1f2937' : '#bfdbfe',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+        display: 'flex',
+        alignItems: 'center',
+        transition: 'background 0.4s',
+        outline: 'none',
+      }}
     >
       <motion.div
-        className={`w-6 h-6 rounded-full flex items-center justify-center shadow-md ${
-          isDark ? 'bg-gray-900 text-yellow-400' : 'bg-white text-yellow-500'
-        }`}
         layout
         transition={{ type: 'spring', stiffness: 700, damping: 30 }}
-        initial={false}
-        animate={{
-          x: isDark ? 32 : 0,
+        style={{
+          width: 24,
+          height: 24,
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: isDark ? '#111827' : '#ffffff',
+          color: isDark ? '#facc15' : '#f59e0b',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
+          x: isDark ? 26 : 0,
         }}
       >
-        <motion.div
-          initial={false}
-          animate={{ rotate: isDark ? 180 : 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          {isDark ? <Moon className="w-4 h-4 fill-current" /> : <Sun className="w-4 h-4 fill-current" />}
-        </motion.div>
+        {isDark ? <Moon size={14} fill="currentColor" /> : <Sun size={14} fill="currentColor" />}
       </motion.div>
     </button>
   );

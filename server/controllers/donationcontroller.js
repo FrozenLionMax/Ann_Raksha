@@ -1,4 +1,5 @@
 const Donation = require("../models/Donation");
+const User = require("../models/User");
 
 const {
   createNotification,
@@ -52,9 +53,11 @@ const createDonation = async (req, res) => {
 
 const getMyDonations = async (req, res) => {
   try {
-    const donations = await Donation.find({
-      donorId: req.user._id,
-    }).sort({
+    const filter = req.user.role === 'ngo' 
+      ? { claimedBy: req.user._id } 
+      : { donorId: req.user._id };
+      
+    const donations = await Donation.find(filter).sort({
       createdAt: -1,
     });
 
@@ -149,10 +152,35 @@ const completeDonation = async (req, res) => {
 
     await donation.save();
 
+    // Gamification & Impact Tracking: Update donor's points and impact stats
+    const donor = await User.findById(donation.donorId);
+    if (donor) {
+      // Points calculation based on quantity and urgency
+      const basePoints = (donation.quantity || 1) * 10;
+      const urgencyMultiplier = donation.urgencyLevel === "critical" ? 2 : donation.urgencyLevel === "high" ? 1.5 : 1;
+      const pointsEarned = Math.round(basePoints * urgencyMultiplier);
+
+      // Impact estimations
+      const mealsProvided = donation.servesPeople || Math.round((donation.quantity || 1) * 3);
+      const co2Saved = (donation.quantity || 1) * 2.5; // Approx 2.5kg CO2 saved per kg of food
+      const waterSaved = (donation.quantity || 1) * 1000; // Approx 1000L water saved per kg of food
+
+      donor.points = (donor.points || 0) + pointsEarned;
+      if (!donor.impactStats) {
+        donor.impactStats = { mealsProvided: 0, co2Saved: 0, waterSaved: 0, totalDonations: 0 };
+      }
+      donor.impactStats.mealsProvided += mealsProvided;
+      donor.impactStats.co2Saved += co2Saved;
+      donor.impactStats.waterSaved += waterSaved;
+      donor.impactStats.totalDonations += 1;
+
+      await donor.save();
+    }
+
     await createNotification(
       donation.donorId,
       "Donation Completed",
-      "Your donation was marked as completed.",
+      `Your donation was marked as completed. You earned points for your impact!`,
       "complete"
     );
 
@@ -195,6 +223,16 @@ const updateDonationStatus = async (req, res) => {
   }
 };
 
+const getDonationById = async (req, res) => {
+  try {
+    const donation = await Donation.findById(req.params.id);
+    if (!donation) return res.status(404).json({ message: "Not found" });
+    res.json(donation);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 module.exports = {
   createDonation,
   getMyDonations,
@@ -202,4 +240,5 @@ module.exports = {
   claimDonation,
   completeDonation,
   updateDonationStatus,
+  getDonationById,
 };
