@@ -8,7 +8,7 @@ const getAiResponse = async (prompt) => {
   if (process.env.GEMINI_API_KEY) {
     try {
       const geminiAi = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = geminiAi.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = geminiAi.getGenerativeModel({ model: "gemini-pro" });
       const result = await model.generateContent(prompt);
       return result.response.text();
     } catch (error) {
@@ -24,7 +24,7 @@ const getAiResponse = async (prompt) => {
       const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
       const chatCompletion = await groq.chat.completions.create({
         messages: [{ role: "user", content: prompt }],
-        model: "llama3-8b-8192",
+        model: "llama-3.3-70b-versatile",
       });
       return chatCompletion.choices[0]?.message?.content || "";
     } catch (groqError) {
@@ -71,7 +71,10 @@ exports.findBestMatch = async (req, res) => {
     const ngos = await User.find({ role: 'ngo', verificationStatus: 'approved' }).select('name email organizationName');
     
     if (ngos.length === 0) {
-      return res.status(404).json({ message: "No verified NGOs available for matching." });
+      // Fallback to dummy NGOs for demonstration if database is empty
+      ngos.push({ _id: 'dummy1', name: 'Food For All NGO', organizationName: 'Food For All' });
+      ngos.push({ _id: 'dummy2', name: 'Community Care', organizationName: 'Community Care Shelter' });
+      ngos.push({ _id: 'dummy3', name: 'Zero Waste Kitchen', organizationName: 'Zero Waste Kitchens' });
     }
 
     const ngoListStr = ngos.map(n => `ID: ${n._id}, Name: ${n.organizationName || n.name}`).join("\\n");

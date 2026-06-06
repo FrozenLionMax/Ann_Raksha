@@ -35,12 +35,10 @@ export default function TrackDonation() {
   const fetchDonation = async () => {
     try {
       const token = localStorage.getItem('token');
-      // For real app, create a route to fetch single donation, for now fetch from my-donations or all
-      const res = await axios.get('http://localhost:5000/api/donations/all', {
+      const res = await axios.get(`http://localhost:5000/api/donations/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const found = res.data.find(d => d._id === id);
-      setDonation(found);
+      setDonation(res.data);
     } catch (error) {
       console.error(error);
     } finally {
@@ -51,9 +49,15 @@ export default function TrackDonation() {
   const updateStatus = async (newStatus) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/donations/status/${id}`, { status: newStatus }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      if (newStatus === 'completed') {
+        await axios.put(`http://localhost:5000/api/donations/complete/${id}`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } else {
+        await axios.put(`http://localhost:5000/api/donations/status/${id}`, { status: newStatus }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
       // The socket will update UI automatically
     } catch (error) {
       alert("Failed to update status");
@@ -64,7 +68,7 @@ export default function TrackDonation() {
     return (
       <div className="min-h-screen bg-transparent relative flex items-center justify-center">
         <BackgroundShader />
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#7BAE7F]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
       </div>
     );
   }
@@ -74,7 +78,7 @@ export default function TrackDonation() {
       <div className="min-h-screen bg-transparent relative flex flex-col items-center justify-center text-white">
         <BackgroundShader />
         <h2 className="text-2xl font-bold mb-4">Donation Not Found</h2>
-        <button onClick={() => navigate('/dashboard')} className="bg-[#2F5D50] px-6 py-2 rounded-full">Go Back</button>
+        <button onClick={() => navigate('/dashboard')} className="bg-emerald-700 px-6 py-2 rounded-full">Go Back</button>
       </div>
     );
   }
@@ -83,9 +87,9 @@ export default function TrackDonation() {
   const progressPercentage = (currentStepIndex / (steps.length - 1)) * 100;
 
   return (
-    <div className="min-h-screen bg-transparent relative dark:bg-gray-900 transition-colors duration-500 font-sans">
+    <div className="min-h-screen bg-transparent relative dark:bg-slate-900 transition-colors duration-500 font-sans">
       <BackgroundShader />
-      <div className="absolute inset-0 bg-gray-900/60 dark:bg-gray-900/80 backdrop-blur-sm z-[-1]"></div>
+      <div className="absolute inset-0 bg-gray-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[-1]"></div>
 
       <div className="max-w-4xl mx-auto px-6 py-12 text-white">
         <button 
@@ -104,7 +108,7 @@ export default function TrackDonation() {
               </p>
             </div>
             <div className="text-right">
-              <span className="bg-[#7BAE7F]/20 text-[#7BAE7F] px-4 py-2 rounded-full font-bold text-sm">
+              <span className="bg-emerald-500/20 text-emerald-500 px-4 py-2 rounded-full font-bold text-sm">
                 ID: {donation._id.slice(-6).toUpperCase()}
               </span>
             </div>
@@ -117,7 +121,7 @@ export default function TrackDonation() {
             
             {/* Animated Fill Line */}
             <motion.div 
-              className="absolute top-1/2 left-0 h-2 bg-gradient-to-r from-[#7BAE7F] to-[#2F5D50] rounded-full -translate-y-1/2"
+              className="absolute top-1/2 left-0 h-2 bg-gradient-to-r from-emerald-500 to-emerald-700 rounded-full -translate-y-1/2"
               initial={{ width: 0 }}
               animate={{ width: `${progressPercentage}%` }}
               transition={{ duration: 0.8, ease: "easeOut" }}
@@ -134,7 +138,7 @@ export default function TrackDonation() {
                   <div key={step.id} className="flex flex-col items-center">
                     <motion.div 
                       className={`w-14 h-14 rounded-full flex items-center justify-center z-10 border-4 ${
-                        isCompleted ? 'bg-[#2F5D50] border-[#7BAE7F]' : 'bg-gray-800 border-gray-700'
+                        isCompleted ? 'bg-emerald-700 border-emerald-500' : 'bg-gray-800 border-gray-700'
                       }`}
                       initial={{ scale: 0.8, opacity: 0 }}
                       animate={{ scale: isCurrent ? 1.1 : 1, opacity: 1 }}
@@ -171,14 +175,14 @@ export default function TrackDonation() {
             <button 
               disabled={currentStepIndex >= 2 || currentStepIndex < 1}
               onClick={() => updateStatus('picked_up')}
-              className="flex-1 bg-[#2F5D50] hover:bg-[#1F4D40] disabled:opacity-50 text-white py-3 rounded-xl font-semibold transition"
+              className="flex-1 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white py-3 rounded-xl font-semibold transition"
             >
               Mark as Picked Up
             </button>
             <button 
               disabled={currentStepIndex >= 3 || currentStepIndex < 2}
               onClick={() => updateStatus('completed')}
-              className="flex-1 bg-[#7BAE7F] hover:bg-[#6A9D6E] disabled:opacity-50 text-white py-3 rounded-xl font-semibold transition"
+              className="flex-1 bg-emerald-500 hover:bg-[#6A9D6E] disabled:opacity-50 text-white py-3 rounded-xl font-semibold transition"
             >
               Mark as Completed
             </button>

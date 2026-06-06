@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema(
 
     role: {
       type: String,
-      enum: ["donor", "receiver", "ngo", "admin"],
+      enum: ["donor", "receiver", "ngo", "volunteer", "admin"],
       required: true,
     },
 
@@ -49,6 +49,18 @@ const userSchema = new mongoose.Schema(
     rejectionReason: {
       type: String,
       default: "",
+    },
+
+    points: {
+      type: Number,
+      default: 0,
+    },
+
+    impactStats: {
+      mealsProvided: { type: Number, default: 0 },
+      co2Saved: { type: Number, default: 0 }, // kg of CO2
+      waterSaved: { type: Number, default: 0 }, // liters of water
+      totalDonations: { type: Number, default: 0 }
     },
   },
   {

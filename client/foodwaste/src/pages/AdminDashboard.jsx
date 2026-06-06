@@ -42,7 +42,7 @@ export default function AdminDashboard() {
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900">
-      <Loader className="w-10 h-10 text-[#7BAE7F] animate-spin" />
+      <Loader className="w-10 h-10 text-emerald-500 animate-spin" />
     </div>
   );
 
@@ -55,7 +55,7 @@ export default function AdminDashboard() {
 
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="flex items-center gap-4 mb-12">
-          <div className="w-12 h-12 bg-gradient-to-br from-[#2F5D50] to-[#7BAE7F] rounded-2xl flex items-center justify-center">
+          <div className="w-12 h-12 bg-gradient-to-br from-emerald-700 to-emerald-500 rounded-2xl flex items-center justify-center">
             <Shield className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -86,8 +86,8 @@ export default function AdminDashboard() {
           </div>
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-sm">
             <div className="flex justify-between items-start mb-4">
-              <div className="w-10 h-10 bg-[#7BAE7F]/20 rounded-xl flex items-center justify-center">
-                <Package className="w-5 h-5 text-[#7BAE7F]" />
+              <div className="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center">
+                <Package className="w-5 h-5 text-emerald-500" />
               </div>
             </div>
             <p className="text-sm text-gray-400 mb-1">Total Donations</p>
