@@ -10,6 +10,8 @@ import { AnimatedCounter, ShareButton } from "../components/UIEnhancements";
 import BadgeGrid from "../components/BadgeSystem";
 import ImpactCertificate from "../components/ImpactCertificate";
 import CarbonCreditCalc from "../components/CarbonCreditCalc";
+import FSSAIVerification from "../components/FSSAIVerification";
+import NotificationPrefs from "../components/NotificationPrefs";
 
 const API = "http://localhost:5000/api/users";
 
@@ -166,6 +168,18 @@ export default function Profile() {
           </motion.div>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
             <ImpactCertificate userName={userInfo.name} impactStats={stats} points={userInfo.points || 0} />
+          </motion.div>
+        </div>
+
+        {/* FSSAI + Notification Prefs */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {userInfo.role === 'donor' && (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+              <FSSAIVerification fssaiLicense={userInfo.fssaiLicense} fssaiVerified={userInfo.fssaiVerified} />
+            </motion.div>
+          )}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+            <NotificationPrefs />
           </motion.div>
         </div>
 

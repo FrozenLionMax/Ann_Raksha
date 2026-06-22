@@ -3,11 +3,12 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Search, Package, PlusCircle, MapPin, Trophy,
-  Bell, User, LogOut, Menu, X, ChevronDown, Settings, Utensils
+  Bell, User, LogOut, Menu, X, ChevronDown, Settings, Utensils, BarChart3, Repeat
 } from 'lucide-react';
 import Logo from './Logo';
 import NotificationCenter from './NotificationCenter';
 import { LanguageSwitcher } from './i18n';
+import ThemeToggle from './ThemeToggle';
 
 const navLinks = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -103,8 +104,9 @@ export default function Navbar() {
             </div>
 
             {/* Right: Actions */}
+            <div className="flex items-center gap-1">
               <LanguageSwitcher compact />
-            <div className="flex items-center gap-2">
+              <ThemeToggle />
               {/* Notifications */}
               <div className="relative">
                 <button
@@ -170,6 +172,20 @@ export default function Navbar() {
                           className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-all"
                         >
                           <Settings className="w-4 h-4" /> AI Recipes
+                        </Link>
+                        <Link
+                          to="/analytics"
+                          onClick={() => setShowProfile(false)}
+                          className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                        >
+                          <BarChart3 className="w-4 h-4" /> Analytics
+                        </Link>
+                        <Link
+                          to="/recurring"
+                          onClick={() => setShowProfile(false)}
+                          className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                        >
+                          <Repeat className="w-4 h-4" /> Recurring
                         </Link>
                         {userInfo.role === 'admin' && (
                           <Link

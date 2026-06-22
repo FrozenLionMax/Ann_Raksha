@@ -2,6 +2,7 @@ const Donation = require("../models/Donation");
 const User = require("../models/User");
 const { createNotification } = require("../services/notificationService");
 const socketio = require("../socket");
+const { sendDonationClaimedEmail, sendDonationCompletedEmail } = require("../services/emailService");
 
 const createDonation = async (req, res) => {
   try {
@@ -107,6 +108,14 @@ const claimDonation = async (req, res) => {
       title: donation.foodTitle,
     });
 
+    // Send email notification
+    try {
+      const donor = await User.findById(donation.donorId);
+      if (donor?.email && donor.notificationPrefs?.donationClaimed !== false) {
+        sendDonationClaimedEmail(donor.email, donor.name, donation.foodTitle, req.user.name || 'An NGO');
+      }
+    } catch {}
+
     res.json({ message: "Donation claimed successfully", donation });
   } catch (error) {
     res.status(500).json({ message: "Failed to claim donation" });
@@ -160,6 +169,13 @@ const completeDonation = async (req, res) => {
       status: "completed",
       title: donation.foodTitle,
     });
+
+    // Send completion email
+    try {
+      if (donor?.email && donor.notificationPrefs?.donationCompleted !== false) {
+        sendDonationCompletedEmail(donor.email, donor.name, donation.foodTitle, mealsProvided, co2Saved);
+      }
+    } catch {}
 
     res.json({ message: "Donation completed successfully", donation });
   } catch (error) {
