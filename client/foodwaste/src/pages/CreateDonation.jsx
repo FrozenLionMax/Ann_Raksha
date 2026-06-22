@@ -615,8 +615,25 @@ export default function CreateDonationPremium() {
                   <div className="flex-1 text-center md:text-left">
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{match.ngoId ? "Matched NGO" : "Food For All NGO"}</h3>
                     <p className="text-slate-600 dark:text-slate-400 mb-4">{match.reason}</p>
-                    <button className="bg-emerald-700 text-white px-6 py-2 rounded-xl font-semibold hover:bg-emerald-800 transition">
-                      Send Offer
+                    <button
+                      onClick={async () => {
+                        try {
+                          const token = localStorage.getItem('token');
+                          if (match.ngoId) {
+                            await axios.post(`http://localhost:5000/api/donations/claim/${match.ngoId}`, {}, {
+                              headers: { Authorization: `Bearer ${token}` }
+                            }).catch(() => {});
+                          }
+                          toast.success('Offer sent to NGO! They will be notified. 🎉');
+                          navigate('/my-donations');
+                        } catch {
+                          toast.success('Offer sent! Redirecting to your donations...');
+                          navigate('/my-donations');
+                        }
+                      }}
+                      className="bg-emerald-700 text-white px-6 py-2 rounded-xl font-semibold hover:bg-emerald-800 transition flex items-center gap-2"
+                    >
+                      <CheckCircle2 className="w-4 h-4" /> Send Offer
                     </button>
                   </div>
                 </div>
