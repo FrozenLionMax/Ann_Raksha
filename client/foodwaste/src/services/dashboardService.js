@@ -1,6 +1,7 @@
+import { API_URL } from '../config/api';
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/users/dashboard";
+const DASHBOARD_URL = `${API_URL}/users/dashboard`;
 
 export const getDashboardStats = async () => {
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
@@ -11,7 +12,7 @@ export const getDashboardStats = async () => {
     },
   };
 
-  const response = await axios.get(API_URL, config);
+  const response = await axios.get(DASHBOARD_URL, config);
 
   return response.data;
 };

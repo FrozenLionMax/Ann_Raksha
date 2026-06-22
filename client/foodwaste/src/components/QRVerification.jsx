@@ -1,10 +1,11 @@
+import API_BASE, { API_URL } from '../config/api';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { QrCode, CheckCircle, Loader, Download, ShieldCheck } from 'lucide-react';
 
-const API = 'http://localhost:5000/api/donations';
+const API = `${API_URL}/donations`;
 const getAuth = () => ({ headers: { Authorization: `Bearer ${JSON.parse(localStorage.getItem('userInfo'))?.token}` } });
 
 export default function QRVerification({ donationId, isOwner = false }) {

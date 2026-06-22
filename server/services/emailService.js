@@ -92,5 +92,17 @@ async function sendWelcomeEmail(email, name) {
      <p>Let's save meals together!</p>`
   );
 }
+async function sendPasswordResetEmail(email, name, otp) {
+  await sendEmail(email, 'Password Reset - Ann Raksha',
+    'Password Reset Request 🔐',
+    `<p>Hey <strong>${name}</strong>,</p>
+     <p>You requested a password reset. Use this OTP code:</p>
+     <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);border-radius:16px;padding:24px;margin:20px 0;text-align:center;">
+       <p style="color:#10b981;font-size:36px;font-weight:900;letter-spacing:8px;margin:0;">${otp}</p>
+       <p style="color:#64748b;font-size:12px;margin:8px 0 0;">Valid for 10 minutes</p>
+     </div>
+     <p style="color:#94a3b8;">If you didn't request this, please ignore this email. Your password will remain unchanged.</p>`
+  );
+}
 
-module.exports = { sendDonationClaimedEmail, sendDonationCompletedEmail, sendWelcomeEmail };
+module.exports = { sendDonationClaimedEmail, sendDonationCompletedEmail, sendWelcomeEmail, sendPasswordResetEmail };

@@ -1,3 +1,4 @@
+import API_BASE, { API_URL } from '../config/api';
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
@@ -8,7 +9,7 @@ import {
   MapPin, Package, Clock, AlertCircle, CheckCircle, Navigation, Loader, RefreshCw
 } from "lucide-react";
 
-const API = "http://localhost:5000/api/donations";
+const API = "${API_URL}/donations";
 const getToken = () => JSON.parse(localStorage.getItem("userInfo"))?.token;
 
 // Custom marker icon

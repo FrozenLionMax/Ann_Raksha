@@ -1,10 +1,11 @@
+import API_BASE, { API_URL } from '../config/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertCircle, Zap, Clock, TrendingUp, MapPin, Users, CheckCircle, ChevronRight, Sparkles, Loader } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const API = 'http://localhost:5000/api';
+const API = API_URL;
 
 export default function AIInsights() {
   const [aiData, setAiData] = useState(null);

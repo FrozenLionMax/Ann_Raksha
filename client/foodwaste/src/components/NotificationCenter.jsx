@@ -1,3 +1,4 @@
+import API_BASE, { API_URL } from '../config/api';
 import { useEffect, useState } from "react";
 import io from "socket.io-client";
 
@@ -17,7 +18,7 @@ function NotificationCenter() {
     if (!userInfo?.token) return;
 
     const newSocket = io(
-      "http://localhost:5000",
+      API_BASE,
       {
         auth: {
           token: userInfo.token,

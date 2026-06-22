@@ -1,3 +1,4 @@
+import API_BASE, { API_URL } from '../config/api';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Medal, Crown, Flame, Droplets, Leaf, ChevronUp, Star } from 'lucide-react';
@@ -17,7 +18,7 @@ export default function Leaderboard() {
   const fetchLeaderboard = async () => {
     try {
       const token = JSON.parse(localStorage.getItem('userInfo'))?.token;
-      const res = await axios.get('http://localhost:5000/api/users/leaderboard', {
+      const res = await axios.get(`${API_URL}/users/leaderboard`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setLeaders(res.data || []);

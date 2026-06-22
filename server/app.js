@@ -4,6 +4,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const connectDB = require("./config/db");
 const { generalLimiter } = require("./middleware/rateLimiter");
+const sanitize = require("./middleware/sanitize");
 
 const authRoutes = require("./routes/authRoutes");
 const donationRoutes = require("./routes/donationRoutes");
@@ -35,6 +36,9 @@ app.use(generalLimiter);
 // Body parsing
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// #10 XSS sanitization
+app.use(sanitize);
 
 app.get("/", (req, res) => {
   res.send("Ann Raksha API v2.0 — Running ✅");

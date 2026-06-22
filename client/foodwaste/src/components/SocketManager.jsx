@@ -1,3 +1,4 @@
+import API_BASE, { API_URL } from '../config/api';
 import { useEffect } from 'react';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
@@ -10,7 +11,7 @@ export default function SocketManager() {
     const userInfo = JSON.parse(localStorage.getItem('userInfo') || 'null');
     if (!userInfo) return;
 
-    socket = io('http://localhost:5000', { transports: ['websocket'] });
+    socket = io(API_BASE, { transports: ['websocket'] });
 
     socket.on('connect', () => {
       console.log('🔌 Socket connected:', socket.id);

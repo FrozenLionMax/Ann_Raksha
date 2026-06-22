@@ -1,3 +1,4 @@
+import API_BASE, { API_URL } from '../config/api';
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -37,7 +38,7 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/register', {
+      const res = await axios.post(`${API_URL}/auth/register`, {
         name: form.name, email: form.email, password: form.password,
         role: form.role, phone: form.phone, organizationName: form.organizationName,
       });

@@ -1,3 +1,4 @@
+import API_BASE, { API_URL } from '../config/api';
 import toast from 'react-hot-toast';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -21,8 +22,8 @@ export default function CorporatePortal() {
         const token = localStorage.getItem('token');
         if (!token) return;
         const [impactRes, leaderRes, dashRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/users/impact', { headers: { Authorization: `Bearer ${token}` } }),
-          axios.get('http://localhost:5000/api/users/leaderboard'),
+          axios.get(`${API_URL}/users/impact`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${API_URL}/users/leaderboard`),
           getDashboardStats()
         ]);
         setUserData(impactRes.data);
@@ -625,7 +626,7 @@ export default function CorporatePortal() {
                   try {
                     const token = localStorage.getItem('token');
                     const nextRun = new Date(`${scheduleForm.date}T${scheduleForm.time}`);
-                    await axios.post('http://localhost:5000/api/recurring', {
+                    await axios.post(`${API_URL}/recurring`, {
                       template: { foodTitle: 'Scheduled Pickup', foodType: 'cooked', quantity: 10, servesPeople: 20, pickupAddress: corporateData.name },
                       frequency: 'weekly', nextRun
                     }, { headers: { Authorization: `Bearer ${token}` } });
@@ -668,7 +669,7 @@ export default function CorporatePortal() {
                   setSavingSettings(true);
                   try {
                     const token = localStorage.getItem('token');
-                    await axios.put('http://localhost:5000/api/users/profile', {
+                    await axios.put(`${API_URL}/users/profile`, {
                       organizationName: settingsForm.name,
                       notificationPrefs: { email: settingsForm.emailNotif, sms: settingsForm.smsAlerts }
                     }, { headers: { Authorization: `Bearer ${token}` } });

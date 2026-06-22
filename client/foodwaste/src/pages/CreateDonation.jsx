@@ -1,3 +1,4 @@
+import API_BASE, { API_URL } from '../config/api';
 import toast from 'react-hot-toast';
 import React, { useState } from 'react';
 import { Upload, MapPin, Clock, Users, AlertCircle, CheckCircle2, Loader, ArrowRight, Filter, Search, Sparkles } from 'lucide-react';
@@ -125,7 +126,7 @@ export default function CreateDonationPremium() {
     }
     setAiLoading(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/ai/categorize', {
+      const response = await axios.post(`${API_URL}/ai/categorize`, {
         title: formData.description,
         type: formData.foodCategory
       });
@@ -166,12 +167,12 @@ export default function CreateDonationPremium() {
       };
 
       // 1. Submit donation to backend
-      const donationResponse = await axios.post('http://localhost:5000/api/donations/create', payload, {
+      const donationResponse = await axios.post(`${API_URL}/donations/create`, payload, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       }).catch(err => console.log('Mocking donation creation as token might not be present:', err));
       
       // 2. Fetch AI Matches
-      const matchResponse = await axios.post('http://localhost:5000/api/ai/match', {
+      const matchResponse = await axios.post(`${API_URL}/ai/match`, {
         donationDetails: payload
       });
       
@@ -620,7 +621,7 @@ export default function CreateDonationPremium() {
                         try {
                           const token = localStorage.getItem('token');
                           if (match.ngoId) {
-                            await axios.post(`http://localhost:5000/api/donations/claim/${match.ngoId}`, {}, {
+                            await axios.post(`${API_BASE}/api/donations/claim/${match.ngoId}`, {}, {
                               headers: { Authorization: `Bearer ${token}` }
                             }).catch(() => {});
                           }

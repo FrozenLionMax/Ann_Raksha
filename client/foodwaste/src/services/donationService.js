@@ -1,6 +1,7 @@
+import { API_URL } from '../config/api';
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/donations";
+const DONATIONS_URL = `${API_URL}/donations`;
 
 const getTokenConfig = () => {
   const userInfo = JSON.parse(localStorage.getItem("userInfo"));
@@ -14,7 +15,7 @@ const getTokenConfig = () => {
 
 export const createDonation = async (donationData) => {
   const response = await axios.post(
-    `${API_URL}/create`,
+    `${DONATIONS_URL}/create`,
     donationData,
     getTokenConfig()
   );
@@ -24,7 +25,7 @@ export const createDonation = async (donationData) => {
 
 export const getMyDonations = async () => {
   const response = await axios.get(
-    `${API_URL}/my-donations`,
+    `${DONATIONS_URL}/my-donations`,
     getTokenConfig()
   );
 
@@ -33,7 +34,7 @@ export const getMyDonations = async () => {
 
 export const getAllDonations = async () => {
   const response = await axios.get(
-    `${API_URL}/all`,
+    `${DONATIONS_URL}/all`,
     getTokenConfig()
   );
 
@@ -42,7 +43,7 @@ export const getAllDonations = async () => {
 
 export const claimDonation = async (id) => {
   const response = await axios.post(
-    `${API_URL}/claim/${id}`,
+    `${DONATIONS_URL}/claim/${id}`,
     {},
     getTokenConfig()
   );
@@ -52,7 +53,7 @@ export const claimDonation = async (id) => {
 
 export const completeDonation = async (id) => {
   const response = await axios.put(
-    `${API_URL}/complete/${id}`,
+    `${DONATIONS_URL}/complete/${id}`,
     {},
     getTokenConfig()
   );

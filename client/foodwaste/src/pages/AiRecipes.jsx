@@ -1,3 +1,4 @@
+import API_BASE, { API_URL } from '../config/api';
 import React, { useState } from 'react';
 import { Sparkles, ChefHat, Loader, ArrowRight } from 'lucide-react';
 import axios from 'axios';
@@ -17,7 +18,7 @@ export default function AiRecipes() {
     setRecipe('');
     
     try {
-      const response = await axios.post('http://localhost:5000/api/ai/recipe', {
+      const response = await axios.post(`${API_URL}/ai/recipe`, {
         ingredients
       });
       setRecipe(response.data.recipe);

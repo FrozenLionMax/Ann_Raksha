@@ -1,3 +1,4 @@
+import API_BASE, { API_URL } from '../config/api';
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
@@ -13,7 +14,7 @@ import CarbonCreditCalc from "../components/CarbonCreditCalc";
 import FSSAIVerification from "../components/FSSAIVerification";
 import NotificationPrefs from "../components/NotificationPrefs";
 
-const API = "http://localhost:5000/api/users";
+const API = "${API_URL}/users";
 
 export default function Profile() {
   const [userInfo, setUserInfo] = useState(null);

@@ -1,3 +1,4 @@
+import API_BASE, { API_URL } from '../config/api';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -21,7 +22,7 @@ export default function AnalyticsPage() {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/users/dashboard', getAuth());
+        const res = await axios.get(`${API_URL}/users/dashboard`, getAuth());
         setData(res.data);
       } catch {} finally { setLoading(false); }
     };
@@ -31,7 +32,7 @@ export default function AnalyticsPage() {
   const exportCSV = async () => {
     setExporting('csv');
     try {
-      const res = await axios.get('http://localhost:5000/api/export/donations/csv', { ...getAuth(), responseType: 'blob' });
+      const res = await axios.get(`${API_URL}/export/donations/csv`, { ...getAuth(), responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url; link.download = 'AnnRaksha_Donations.csv'; link.click();
@@ -42,7 +43,7 @@ export default function AnalyticsPage() {
   const exportJSON = async () => {
     setExporting('json');
     try {
-      const res = await axios.get('http://localhost:5000/api/export/impact', getAuth());
+      const res = await axios.get(`${API_URL}/export/impact`, getAuth());
       const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: 'application/json' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');

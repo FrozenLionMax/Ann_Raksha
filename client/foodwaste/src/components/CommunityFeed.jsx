@@ -1,3 +1,4 @@
+import API_BASE, { API_URL } from '../config/api';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, Package, CheckCircle, Users, Clock, RefreshCw } from 'lucide-react';
@@ -21,7 +22,7 @@ export default function CommunityFeed() {
     try {
       const token = JSON.parse(localStorage.getItem('userInfo'))?.token;
       // Fetch recent donations as activity proxy
-      const res = await axios.get('http://localhost:5000/api/donations/all', {
+      const res = await axios.get(`${API_URL}/donations/all`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

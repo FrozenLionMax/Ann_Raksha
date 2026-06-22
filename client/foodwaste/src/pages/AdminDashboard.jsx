@@ -1,3 +1,4 @@
+import API_BASE, { API_URL } from '../config/api';
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
@@ -7,7 +8,7 @@ import {
   Leaf, Flame, Droplets, BarChart3, Clock, Eye
 } from "lucide-react";
 
-const API = "http://localhost:5000/api/admin";
+const API = "${API_URL}/admin";
 const getToken = () => JSON.parse(localStorage.getItem("userInfo"))?.token;
 
 export default function AdminDashboard() {

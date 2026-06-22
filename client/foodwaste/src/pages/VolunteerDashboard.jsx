@@ -1,3 +1,4 @@
+import API_BASE, { API_URL } from '../config/api';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -13,7 +14,7 @@ import {
  * Volunteers can see claimed donations nearby and offer to deliver
  */
 
-const API = 'http://localhost:5000/api/donations';
+const API = `${API_URL}/donations`;
 const getToken = () => JSON.parse(localStorage.getItem('userInfo'))?.token;
 
 export default function VolunteerDashboard() {

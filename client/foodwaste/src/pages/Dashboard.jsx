@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { SkeletonDashboard } from '../components/Skeleton';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -79,11 +80,8 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
-          <p className="text-slate-400">Loading dashboard...</p>
-        </div>
+      <div className="min-h-screen bg-slate-900">
+        <SkeletonDashboard />
       </div>
     );
   }

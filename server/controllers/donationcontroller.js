@@ -43,12 +43,18 @@ const getMyDonations = async (req, res) => {
       ? { claimedBy: req.user._id }
       : { donorId: req.user._id };
 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const total = await Donation.countDocuments(filter);
+
     const donations = await Donation.find(filter)
       .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
       .populate("donorId", "name email phone organizationName")
       .populate("claimedBy", "name email phone organizationName");
 
-    res.json({ count: donations.length, donations });
+    res.json({ count: donations.length, total, page, pages: Math.ceil(total / limit), donations });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch donations" });
   }
@@ -69,11 +75,17 @@ const browseDonations = async (req, res) => {
       filter.urgencyLevel = urgencyLevel;
     }
 
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 12;
+    const total = await Donation.countDocuments(filter);
+
     const donations = await Donation.find(filter)
       .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
       .populate("donorId", "name email phone organizationName");
 
-    res.json({ count: donations.length, donations });
+    res.json({ count: donations.length, total, page, pages: Math.ceil(total / limit), donations });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch donations" });
   }

@@ -1,3 +1,4 @@
+import API_BASE, { API_URL } from '../config/api';
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -8,7 +9,7 @@ import {
   Phone, AlertCircle, Truck, Gift
 } from "lucide-react";
 
-const API = "http://localhost:5000/api/donations";
+const API = "${API_URL}/donations";
 const getToken = () => JSON.parse(localStorage.getItem("userInfo"))?.token;
 
 export default function TrackDonation() {

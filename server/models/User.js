@@ -39,6 +39,10 @@ const userSchema = new mongoose.Schema(
       newDonationNearby: { type: Boolean, default: true },
       weeklyReport: { type: Boolean, default: true },
     },
+
+    // Password Reset
+    resetPasswordOTP: { type: String },
+    resetPasswordExpire: { type: Date },
   },
   { timestamps: true }
 );
