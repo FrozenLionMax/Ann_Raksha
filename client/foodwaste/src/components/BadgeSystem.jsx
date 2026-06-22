@@ -81,6 +81,5 @@ function BadgeGrid({ impactStats, points = 0, compact = false }) {
   );
 }
 
-module.exports = { BADGES, TIER_COLORS, getUserBadges };
 export { BADGES, TIER_COLORS, getUserBadges };
 export default BadgeGrid;
