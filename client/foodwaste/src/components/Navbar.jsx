@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import Logo from './Logo';
 import NotificationCenter from './NotificationCenter';
+import { LanguageSwitcher } from './i18n';
 
 const navLinks = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -15,6 +16,7 @@ const navLinks = [
   { path: '/my-donations', label: 'My Donations', icon: Package },
   { path: '/explore', label: 'Map', icon: MapPin },
   { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+  { path: '/volunteer', label: 'Volunteer', icon: Package, showFor: ['volunteer', 'admin'] },
 ];
 
 export default function Navbar() {
@@ -50,7 +52,8 @@ export default function Navbar() {
   if (!userInfo) return null;
 
   const filteredLinks = navLinks.filter(
-    link => !link.hideFor || !link.hideFor.includes(userInfo.role)
+    link => (!link.hideFor || !link.hideFor.includes(userInfo.role)) &&
+            (!link.showFor || link.showFor.includes(userInfo.role))
   );
 
   const initials = (userInfo.name || 'U').charAt(0).toUpperCase();
@@ -100,6 +103,7 @@ export default function Navbar() {
             </div>
 
             {/* Right: Actions */}
+              <LanguageSwitcher compact />
             <div className="flex items-center gap-2">
               {/* Notifications */}
               <div className="relative">

@@ -6,6 +6,10 @@ import {
   User, Mail, Phone, Building2, MapPin, Save, Loader,
   Trophy, Leaf, Droplets, Flame, Package, Edit3, Camera, Shield
 } from "lucide-react";
+import { AnimatedCounter, ShareButton } from "../components/UIEnhancements";
+import BadgeGrid from "../components/BadgeSystem";
+import ImpactCertificate from "../components/ImpactCertificate";
+import CarbonCreditCalc from "../components/CarbonCreditCalc";
 
 const API = "http://localhost:5000/api/users";
 
@@ -36,7 +40,7 @@ export default function Profile() {
       localStorage.setItem("userInfo", JSON.stringify(updated));
       setUserInfo(updated);
       setEditing(false);
-      toast.success("Profile updated successfully! ✨");
+      toast.success("Profile updated! ✨");
     } catch (error) {
       toast.error("Failed to update profile");
     } finally {
@@ -65,7 +69,6 @@ export default function Profile() {
           className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-xl mb-6"
         >
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-            {/* Avatar */}
             <div className="relative group">
               <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-4xl font-black text-white shadow-2xl shadow-emerald-500/20">
                 {initials}
@@ -75,7 +78,6 @@ export default function Profile() {
               </div>
             </div>
 
-            {/* Info */}
             <div className="flex-1 text-center md:text-left">
               <div className="flex items-center justify-center md:justify-start gap-3 mb-1">
                 <h1 className="text-2xl font-black text-white">{userInfo.name}</h1>
@@ -92,22 +94,19 @@ export default function Profile() {
                 </div>
                 <div className="flex items-center gap-1.5 text-sm text-slate-400">
                   <Shield className="w-4 h-4 text-emerald-400" />
-                  Member since {new Date(userInfo.createdAt || Date.now()).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                  Since {new Date(userInfo.createdAt || Date.now()).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
                 </div>
               </div>
             </div>
 
-            {/* Edit Button */}
-            <button
-              onClick={() => setEditing(!editing)}
-              className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${
-                editing
-                  ? "bg-red-500/10 text-red-400 hover:bg-red-500/20"
-                  : "bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              {editing ? <><span>✕</span> Cancel</> : <><Edit3 className="w-4 h-4" /> Edit Profile</>}
-            </button>
+            <div className="flex items-center gap-2">
+              <ShareButton meals={stats.mealsProvided || 0} co2={stats.co2Saved || 0} donations={stats.totalDonations || 0} />
+              <button onClick={() => setEditing(!editing)}
+                className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${editing ? "bg-red-500/10 text-red-400 hover:bg-red-500/20" : "bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white"}`}
+              >
+                {editing ? <><span>✕</span> Cancel</> : <><Edit3 className="w-4 h-4" /> Edit</>}
+              </button>
+            </div>
           </div>
         </motion.div>
 
@@ -116,24 +115,26 @@ export default function Profile() {
           <h2 className="text-lg font-bold text-white mb-3">Your Impact</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
             {impactCards.map((card, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 + i * 0.05 }}
-                className={`${card.bg} border border-white/5 rounded-2xl p-4 text-center`}
-              >
+              <div key={i} className={`${card.bg} border border-white/5 rounded-2xl p-4 text-center`}>
                 <card.icon className={`w-5 h-5 ${card.color} mx-auto mb-2`} />
                 <p className="text-white font-bold text-lg">{card.value}</p>
                 <p className="text-slate-500 text-xs mt-0.5">{card.label}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </motion.div>
 
+        {/* Badges */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-6">
+          <h2 className="text-lg font-bold text-white mb-3">Achievements & Badges</h2>
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur-xl">
+            <BadgeGrid impactStats={stats} points={userInfo.points || 0} />
+          </div>
+        </motion.div>
+
         {/* Edit Form */}
-        <AnimatedSection show={editing}>
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+        {editing && (
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
             className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-xl mb-6"
           >
             <h2 className="text-lg font-bold text-white mb-5">Edit Profile</h2>
@@ -143,29 +144,33 @@ export default function Profile() {
               <InputField icon={Building2} label="Organization" value={form.organizationName} onChange={v => setForm({ ...form, organizationName: v })} />
               <div className="md:col-span-2">
                 <label className="text-sm text-slate-400 mb-1.5 block">Bio</label>
-                <textarea
-                  value={form.bio}
-                  onChange={e => setForm({ ...form, bio: e.target.value })}
-                  rows={3}
-                  placeholder="Tell us about yourself..."
+                <textarea value={form.bio} onChange={e => setForm({ ...form, bio: e.target.value })} rows={3} placeholder="Tell us about yourself..."
                   className="w-full px-4 py-3 bg-slate-800/50 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 resize-none transition-all"
                 />
               </div>
             </div>
             <div className="flex justify-end mt-5">
-              <button
-                onClick={handleSave}
-                disabled={saving}
+              <button onClick={handleSave} disabled={saving}
                 className="px-6 py-3 rounded-xl font-semibold text-sm bg-gradient-to-r from-emerald-500 to-emerald-600 text-white hover:shadow-lg hover:shadow-emerald-500/25 disabled:opacity-50 flex items-center gap-2 transition-all"
               >
                 {saving ? <><Loader className="w-4 h-4 animate-spin" /> Saving...</> : <><Save className="w-4 h-4" /> Save Changes</>}
               </button>
             </div>
           </motion.div>
-        </AnimatedSection>
+        )}
+
+        {/* Carbon Credits + Certificate */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <CarbonCreditCalc impactStats={stats} />
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+            <ImpactCertificate userName={userInfo.name} impactStats={stats} points={userInfo.points || 0} />
+          </motion.div>
+        </div>
 
         {/* Account Info */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
           className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 backdrop-blur-xl"
         >
           <h2 className="text-lg font-bold text-white mb-5">Account Details</h2>
@@ -175,7 +180,6 @@ export default function Profile() {
             <InfoRow icon={Phone} label="Phone" value={userInfo.phone || "Not set"} muted={!userInfo.phone} />
             <InfoRow icon={Building2} label="Organization" value={userInfo.organizationName || "Not set"} muted={!userInfo.organizationName} />
             <InfoRow icon={Shield} label="Role" value={userInfo.role} capitalize />
-            <InfoRow icon={MapPin} label="Address" value={userInfo.address || "Not set"} muted={!userInfo.address} />
           </div>
         </motion.div>
       </div>
@@ -189,10 +193,7 @@ function InputField({ icon: Icon, label, value, onChange }) {
       <label className="text-sm text-slate-400 mb-1.5 block">{label}</label>
       <div className="relative">
         <Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-        <input
-          type="text"
-          value={value}
-          onChange={e => onChange(e.target.value)}
+        <input type="text" value={value} onChange={e => onChange(e.target.value)}
           className="w-full pl-11 pr-4 py-3 bg-slate-800/50 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all"
         />
       </div>
@@ -208,15 +209,8 @@ function InfoRow({ icon: Icon, label, value, muted, capitalize }) {
       </div>
       <div>
         <p className="text-xs text-slate-500 uppercase tracking-wider">{label}</p>
-        <p className={`text-sm font-medium ${muted ? "text-slate-600 italic" : "text-white"} ${capitalize ? "capitalize" : ""}`}>
-          {value}
-        </p>
+        <p className={`text-sm font-medium ${muted ? "text-slate-600 italic" : "text-white"} ${capitalize ? "capitalize" : ""}`}>{value}</p>
       </div>
     </div>
   );
-}
-
-function AnimatedSection({ show, children }) {
-  if (!show) return null;
-  return children;
 }
